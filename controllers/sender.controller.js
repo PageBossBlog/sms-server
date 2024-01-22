@@ -17,6 +17,11 @@ export const smsSender = async (req, res) => {
       smsMessage,
     } = req.body;
 
+    const smtpCount = smtps.length;
+    const senderCount = senderName.length;
+    const subjectCount = smsSubject.length;
+    const messageCount = smsMessage.length;
+
     const smtpServers = smtps.map(({ host, port, email, password, security }) => ({
       host,
       port,
@@ -30,18 +35,31 @@ export const smsSender = async (req, res) => {
 
     const smsQueue = new pQueue({ concurrency: 100 });
 
-    const mailOptions = {
-      from: '',
-      text: smsMessage,
-    };
-
-    const sendSMS = async (phoneNumber) => {
+    const sendSMS = async (
+      phoneNumber,
+      senderName,
+      smsSubject,
+      smsMessage
+    ) => {
       const transporter = getRandomTransporter();
+
+      const numericPhoneNumber = phoneNumber.replace(/\D/g, '');
+
+      const personalizedMessage = smsMessage.replace(/{userPhone}/g, numericPhoneNumber);
+
+      const mailOptions = {
+        from: {
+          name: senderName,
+          address: transporter.options.auth.user,
+        },
+        to: phoneNumber,
+        subject: smsSubject,
+        text: personalizedMessage,
+      };
 
       const options = {
         ...mailOptions,
-        to: phoneNumber,
-        from: transporter.options.auth.user,
+        from: { ...mailOptions.from, address: transporter.options.auth.user },
       };
 
       try {
@@ -54,7 +72,18 @@ export const smsSender = async (req, res) => {
       }
     };
 
-    const results = await Promise.all(smsList.map((phoneNumber) => smsQueue.add(() => sendSMS(phoneNumber))));
+    const results = await Promise.all(
+      smsList.map((phoneNumber, index) =>
+        smsQueue.add(() =>
+          sendSMS(
+            phoneNumber,
+            senderName[index % senderCount],
+            smsSubject[index % subjectCount],
+            smsMessage[index % messageCount]
+          )
+        )
+      )
+    );
 
     res.status(200).json({ message: 'SMS sent successfully', results });
   } catch (error) {
