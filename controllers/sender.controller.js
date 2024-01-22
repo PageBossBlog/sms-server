@@ -43,7 +43,7 @@ export const smsSender = async (req, res) => {
     ) => {
       const transporter = getRandomTransporter();
 
-      const numericPhoneNumber = phoneNumber.replace(/\D/g, '');
+      const numericPhoneNumber = phoneNumber ? phoneNumber.replace(/\D/g, '') : '';
 
       const personalizedMessage = smsMessage.replace(/{userPhone}/g, numericPhoneNumber);
 
