@@ -16,17 +16,12 @@ export const smsSender = async (req, res) => {
       smsSubject,
       smsMessage,
     } = req.body;
-
-    const smtpCount = smtps.length;
-    const senderCount = Array.isArray(senderName) ? senderName.length : 1;
-    const subjectCount = Array.isArray(smsSubject) ? smsSubject.length : 1;
-    const messageCount = Array.isArray(smsMessage) ? smsMessage.length : 1;
-
-    //const senderCount = Array.isArray(senderNames) ? senderNames.length : senderNames ? 1 : 0;
-    //const subjectCount = Array.isArray(smsSubjects) ? smsSubjects.length : smsSubjects ? 1 : 0;
-    //const messageCount = Array.isArray(smsMessages) ? smsMessages.length : smsMessages ? 1 : 0;
-
     
+    const smtpCount = smtps.length;
+    const senderCount = senderName.length;
+    const subjectCount = smsSubject.length;
+    const messageCount = smsMessage.length;
+
     const smtpServers = smtps.map(({ host, port, email, password, security }) => ({
       host,
       port,
